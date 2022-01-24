@@ -1,36 +1,108 @@
-import React from 'react'
+import react from 'react'
+import { useState } from 'react'
 
-const App = () => {
+const Total =(good,neutral,bad)=>{
+  const Totals = good + neutral + bad
+   return Totals
+ }
 
-  const course = 'Half Stack application development'
-  const parts = [
-  {
-    name: 'Fundamentals of React',
-    exercises: 10
-  },
-  
-  {
-    name: 'Using props to pass data',
-    exercises: 7
-  },
+ const Average = (good,bad,Totals) =>{
+  const Averages = (good + bad)/Totals
+  return Averages
+}
 
-  {
-    name: 'State of a component',
-    exercises: 14
-  },
-]
+const Positive =(good,Totals) =>{
+  const Positives = (good/Totals)*100
+  return Positives
+}
 
+const StatisticLine = (props) => {
   return (
     <div>
-      <h1>{course}</h1>
-      <p>{parts[0].name} {parts[0].exercises}</p>
-      <p>{parts[1].name} {parts[1].exercises}</p>
-      <p>{parts[2].name} {parts[2].exercises}</p>
-      <p>Number of Exercises {parts[0].exercises + parts[1].exercises + parts[2].exercises}</p>
-
+      <p> {props.text} {props.value} </p>
     </div>
   )
 }
 
+const Button = (props) => {
+  return (
+    <button onClick = {props.click}>{props.text}</button>
+  )
+}
 
-export default App
+const Statistics =(props) =>{
+  if (props.AnyFeedback ==0){
+    return (
+      <div>No feedback given</div>
+    )
+    
+  }
+  return(
+  <div>
+    <h1>statistics</h1>
+      <table>
+        <tbody>
+        <tr>
+          <td><StatisticLine text = "good"/></td>
+          <td><StatisticLine value = {props.good}/> </td>
+        </tr>
+
+        <tr>
+          <td><StatisticLine text = "neutral"/></td>
+          <td><StatisticLine value = {props.neutral}/> </td>
+        </tr>
+        
+        <tr>
+          <td><StatisticLine text = "bad"/></td>
+          <td><StatisticLine value = {props.bad}/> </td>
+        </tr>
+
+        <tr>
+          <td>all</td>
+          <td>{props.Totals}</td>
+        </tr>
+
+        <tr>
+        <td>average</td>
+          <td>{props.Averages}</td>
+        </tr>
+
+        <tr>
+          <td>positive</td>
+          <td>{props.Positives}%</td>
+        </tr>
+
+        </tbody>
+      </table>
+     
+
+  </div>
+  )
+}
+
+const App =()=> {
+  const [good,goodCounter] =useState(0)
+  const [neutral,neutralCounter] =useState(0)
+  const [bad,badCounter] =useState(0)
+
+
+  const Totals = Total(good,neutral,bad)
+  const Averages = Average(good,bad,Totals)
+  const Positives = Positive(good,Totals)
+
+
+  return (
+    <div>
+      <h1>give feedback</h1>
+      <Button click = {()=>goodCounter(good+1)} text = "good" />
+      <Button click = {()=>neutralCounter(neutral+1)} text = "neutral" />
+      <Button click = {()=>badCounter(bad+1)} text = "bad" />
+      <Statistics AnyFeedback = {Totals} good={good} neutral = {neutral} bad = {bad} Totals = {Totals} Averages = {Averages} Positives = {Positives}/>
+    </div>
+    
+
+  )
+}
+
+
+export default App;

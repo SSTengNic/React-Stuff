@@ -1,108 +1,76 @@
+import { render } from '@testing-library/react'
 import react from 'react'
 import { useState } from 'react'
 
-const Total =(good,neutral,bad)=>{
-  const Totals = good + neutral + bad
-   return Totals
- }
-
- const Average = (good,bad,Totals) =>{
-  const Averages = (good + bad)/Totals
-  return Averages
-}
-
-const Positive =(good,Totals) =>{
-  const Positives = (good/Totals)*100
-  return Positives
-}
-
-const StatisticLine = (props) => {
+const AnecCounter = [0,0,0,0,0,0,0]
+const Button = (props) =>{
   return (
-    <div>
-      <p> {props.text} {props.value} </p>
-    </div>
+    <button onClick={props.click}> {props.text} </button>
   )
 }
 
-const Button = (props) => {
-  return (
-    <button onClick = {props.click}>{props.text}</button>
-  )
+const CounterCopier =(AnecCounter) =>{
+  const Copy = [...AnecCounter]
+  console.log(Copy)
+  return Copy
 }
 
-const Statistics =(props) =>{
-  if (props.AnyFeedback ==0){
-    return (
-      <div>No feedback given</div>
-    )
+const RandomGenerator =() => {
+  const RandomNum = Math.floor(Math.random()*6)
+
+  return RandomNum 
+}
+
+const App = () => {
+  const anecdotes = [
+    'If it hurts, do it more often',
+    'Adding manpower to a late software project makes it later!',
+    'The first 90 percent of the code accounts for the first 10 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.',
+    'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
+    'Premature optimization is the root of all evil.',
+    'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
+    'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients'
+  ]
+
+  
+  console.log("Hello There?")
+  let RandomNum = RandomGenerator()
+  const [selected, setSelected] = useState(0)
+  const [Incre,Inselector] = useState(0)
+  
+  while (RandomNum == selected){
+    RandomNum = RandomGenerator()
+  }
+
+  
+  const Increment = () => {
+    Inselector(Incre+1)
+    AnecCounter[selected]+=1
+    console.log("AnecCounter increment")
+    console.log(AnecCounter[selected])
+
     
   }
-  return(
-  <div>
-    <h1>statistics</h1>
-      <table>
-        <tbody>
-        <tr>
-          <td><StatisticLine text = "good"/></td>
-          <td><StatisticLine value = {props.good}/> </td>
-        </tr>
+  let max = AnecCounter.indexOf(Math.max(...AnecCounter))
 
-        <tr>
-          <td><StatisticLine text = "neutral"/></td>
-          <td><StatisticLine value = {props.neutral}/> </td>
-        </tr>
-        
-        <tr>
-          <td><StatisticLine text = "bad"/></td>
-          <td><StatisticLine value = {props.bad}/> </td>
-        </tr>
-
-        <tr>
-          <td>all</td>
-          <td>{props.Totals}</td>
-        </tr>
-
-        <tr>
-        <td>average</td>
-          <td>{props.Averages}</td>
-        </tr>
-
-        <tr>
-          <td>positive</td>
-          <td>{props.Positives}%</td>
-        </tr>
-
-        </tbody>
-      </table>
-     
-
-  </div>
-  )
-}
-
-const App =()=> {
-  const [good,goodCounter] =useState(0)
-  const [neutral,neutralCounter] =useState(0)
-  const [bad,badCounter] =useState(0)
-
-
-  const Totals = Total(good,neutral,bad)
-  const Averages = Average(good,bad,Totals)
-  const Positives = Positive(good,Totals)
-
-
+  console.log(selected)
+  const Show = AnecCounter[selected]
   return (
-    <div>
-      <h1>give feedback</h1>
-      <Button click = {()=>goodCounter(good+1)} text = "good" />
-      <Button click = {()=>neutralCounter(neutral+1)} text = "neutral" />
-      <Button click = {()=>badCounter(bad+1)} text = "bad" />
-      <Statistics AnyFeedback = {Totals} good={good} neutral = {neutral} bad = {bad} Totals = {Totals} Averages = {Averages} Positives = {Positives}/>
-    </div>
     
-
+    <div>
+      <h1>Anecdote of the Day</h1>
+      <p>{anecdotes[selected]}</p>
+      <p>Has {Show} votes </p>
+      <Button click = {()=>Increment()} text = "Vote" />
+      <Button click = {()=>setSelected(RandomNum)} text = "Select Anecdote"/>
+      
+      
+      <h1>Anecdote with the most votes</h1>
+      {anecdotes[max]}
+      
+    </div>
+  
   )
 }
 
-
-export default App;
+export default App

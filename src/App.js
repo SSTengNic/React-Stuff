@@ -1,83 +1,152 @@
-import {useState, useEffect} from 'react'
+//skipped .9 and 2.10
+import servicenotes from './service/servicenotes'
+import { useState,useEffect } from 'react'
 import axios from 'axios'
-import './App.css'
-import { isCompositeComponent } from 'react-dom/test-utils'
+import Note from './Note'
+import { render } from '@testing-library/react'
 
 
 
-function App() {
-  const [SearchCountries, SetSearchCountries] = useState('')
-  const [Package, SetPackage] = useState([])
-  var Tracker = []
+const ShowInfo =(props) => {
+  return (
+    <li> {props.name} {props.number} </li>
+  )
+}
+const App = () => {
 
-  const HandleInfo = (event) => {
-    SetSearchCountries(event.target.value)
-    console.log(event.target.value)
+  const [data,setData] = useState([])
+  const [newName, setNewName] = useState('')
+  const [newNum,setNewNum] = useState('')
+  const [displaymessage,setdisplaymessage] = useState('')
+  
+  const displaystyle = {
+    color: 'red',
+    background: 'lightgrey',
+    fontSize: 20,
+    borderStyle: 'solid',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10
   }
 
-  
-  
-  useEffect(() => {
-        console.log('effect')
-        axios
-              .get('https://restcountries.com/v3.1/all')
-              .then(response => {
-              console.log('promise fulfilled') 
-              SetPackage(response.data)
-               })  }, [])
 
+  useEffect(()=> {
+    servicenotes.getAll().then(response=>{
+      setData(response.data)
+    console.log("this is the data",data)
+    })
+  },[]) //saves all the data from the server to the data state
 
+  const handleNewName =(event) => {
+    console.log(event.target.value)
+    setNewName(event.target.value)
 
-console.log(Package.length)
-  return (
-    <div>
-      <input
-        value = {SearchCountries}
-        onChange = {HandleInfo}
-        />
-        {Package.filter((val)=>{
-        if (SearchCountries ==""){
-          return val
-        }
-        else if (val.name.common.toString().toLowerCase().includes(SearchCountries.toString().toLowerCase())) {
-          Tracker.push(val.name.common)
-            return (
-              console.log("Tracker is ", Tracker),
-              val
-            )
-        }
-        }).map((val,key) => {
-          if (Tracker.length !== 1){
-            return (<div key = {key}> <p>{val.name.common}</p></div>)
-          }
-          else if (Tracker.length === 1){
+  }
 
-            var LangSpeller = Object.values(val.languages)
-            console.log(LangSpeller)
-            return (
+  const handleNewNum = (event) => {
+    console.log(event.target.value)
+    setNewNum(event.target.value)
+  }
 
-            <div>
-                  <h2>{val.name.common}</h2>
-                  <p>capital {val.capital} </p>
-                  <p>area {val.area}</p>
-                  <h3>Languages</h3>
-                  <ul>
-                    {LangSpeller.map(langu=>
-                    <li key = {key}>{langu}</li>
-                    )}
-                  </ul>
-                  <p>{val.flag}</p>
+  const addInfo =(event) => {
+    var checker = true
+    event.preventDefault()
+    const InfoObject = {
+      name: newName,
+      number: newNum
+    }
 
+    for (var i =0;i<data.length;i++){
+      if (data[i].name === newName)
+      {
+        var hey = data[i].id
+        console.log('going through?')
+        checker = false
+      }
+    }
+    if (checker === false){
+      if (window.confirm(newName + "Has already been added to the phonebook, replace the old number with a new one?")){
+        
+        servicenotes.update(hey,InfoObject).then(response => {
+          setData(data.map(datax=>datax.id!==hey? datax:InfoObject))
+          setdisplaymessage(`Updated ${InfoObject.name}'s number.`)
+          setTimeout(()=> {
+            setdisplaymessage('')
+          },5000)
+        }).catch(displayz =>{
+          setdisplaymessage(`{Information of ${InfoObject.name} has already been removed from server}`)
+          setTimeout(()=> {
+            setdisplaymessage('')
+          },5000)
+          const newData = data.filter(dataz => dataz.id!==hey)
+          setData(newData)
+        })        
+      }
+    }
 
+      else if (checker ===true){
+        console.log("New Addition Add")
       
-                 
-            </div>)
-          }
-          
-        })}
+        servicenotes.create(InfoObject).then(response => {
+          setData(data.concat(response.data))
+          setdisplaymessage(
+            `Added ${InfoObject.name} `) 
+          setTimeout(()=> {
+              setdisplaymessage('')
+            },5000)
+        })
+        setNewName('')
+        setNewNum('')
+      }
+    
+  }
   
+    
+    const toggleDelete = (name,id) => {
+    
+      if (window.confirm(`Delete ${name}`)) {
+      servicenotes.deleteinput(id)
+      const newData = data.filter(dataz => dataz.id!==id)
+      setData(newData)
+      }
+      
+    }
+
+
+  return (
+    
+    <div>
+      <h2>Phonebook</h2>
+      <li style = {displaystyle}>
+      {displaymessage}
+
+      </li>
+      <form onSubmit={addInfo}>
+        <div>
+          name: 
+            <input
+              value = {newName}
+              onChange = {handleNewName}
+           />
+        </div>
+        <div>
+         number:
+          <input
+          value = {newNum}
+          onChange = {handleNewNum}
+            />
+        </div>
+        <div>
+          <button type="submit">add</button>
+        </div>
+      </form>
+      <h2>Numbers</h2>
+      {data.map(datas =>
+      <Note key={datas.id} data = {datas} toggleDelete = {()=>toggleDelete(datas.name,datas.id)} />
+)}
     </div>
   )
 }
 
-export default App;
+
+export default App
